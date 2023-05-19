@@ -4,6 +4,9 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	TgID   string
-	ChatID int64
+	UserTgID string
+	Name     string
+	Age      int
+	Email    string
+	Verified bool
 }
