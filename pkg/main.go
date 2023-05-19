@@ -11,7 +11,12 @@ type MessageHandler struct{}
 func (h *MessageHandler) handleCommands(update tgbotapi.Update) ([]tgbotapi.MessageConfig, error) {
 	var res []tgbotapi.MessageConfig
 	// var err error
+	chatID := update.Message.Chat.ID
 	switch update.Message.Command() {
+	case consts.START_COMMAND:
+		res = append(res, tgbotapi.NewMessage(chatID, consts.START_MESSAGE))
+	case consts.HELP_COMMAND:
+		res = append(res, tgbotapi.NewMessage(chatID, consts.HELP_MESSAGE))
 	default:
 		return []tgbotapi.MessageConfig{}, consts.UPDATE_MESSAGE_ERROR
 	}

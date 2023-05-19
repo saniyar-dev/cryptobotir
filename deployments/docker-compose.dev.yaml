@@ -1,0 +1,11 @@
+services:
+  bot:
+    image: "hub.hamdocker.ir/cosmtrek/air"
+    restart: always
+    container_name: cryptobotir
+    working_dir: "/go/src/github.com/saniyar-dev/cryptobotir"
+    env_file:
+      - "./.dev.env"
+    volumes:
+      - "/home/saniyar/go/src/github.com/saniyar-dev/cryptobotir:/go/src/github.com/saniyar-dev/cryptobotir"
+    network_mode: host
