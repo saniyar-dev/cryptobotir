@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"strings"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"github.com/saniyar-dev/cryptobotir/pkg/consts"
@@ -44,10 +46,18 @@ func (h *MessageHandler) handleCallbackQuery(
 			return []tgbotapi.Chattable{}, err
 		}
 	default:
-		return []tgbotapi.Chattable{}, &consts.CustomError{
-			Message: consts.UPDATE_MESSAGE_ERROR.Message,
-			Code:    consts.UPDATE_MESSAGE_ERROR.Code,
-			Detail:  update.CallbackQuery.Data,
+		if strings.HasPrefix(update.CallbackQuery.Data, consts.BUY_TETHER_DATA) {
+			buyService := service.BuyFromCryptobotService{}
+			res, err = buyService.BuyTether(update)
+			if err != nil {
+				return []tgbotapi.Chattable{}, err
+			}
+		} else {
+			return []tgbotapi.Chattable{}, &consts.CustomError{
+				Message: consts.UPDATE_MESSAGE_ERROR.Message,
+				Code:    consts.UPDATE_MESSAGE_ERROR.Code,
+				Detail:  update.CallbackQuery.Data,
+			}
 		}
 	}
 	return res, nil

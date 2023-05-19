@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/saniyar-dev/cryptobotir/pkg/consts"
 )
@@ -51,14 +53,41 @@ func (s *BuyFromCryptobotService) BuyTether(update tgbotapi.Update) ([]tgbotapi.
 		// username = update.CallbackQuery.Message.Chat.UserName
 	}
 	var res []tgbotapi.Chattable
-	editedMsg := tgbotapi.NewEditMessageTextAndMarkup(chatID, msgID, "test", tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(
-				"test",
-				"test",
+
+	if update.CallbackQuery != nil && update.CallbackQuery.Data != consts.BUY_TETHER_DATA {
+		amount := strings.ReplaceAll(strings.Trim(update.CallbackQuery.Data, consts.BUY_TETHER_DATA), " ", "")
+		editedMsg := tgbotapi.NewEditMessageTextAndMarkup(chatID, msgID, consts.PAY_FOR_TETHER_MESSAGE+amount, tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData(
+					consts.PAY_BUTTON_KEYBOARD,
+					consts.PAY_BUTTON_DATA,
+				),
 			),
-		),
-	))
-	res = append(res, editedMsg)
+		))
+		res = append(res, editedMsg)
+	} else {
+		editedMsg := tgbotapi.NewEditMessageTextAndMarkup(chatID, msgID, consts.BUY_SELECT_AMOUNT_MESSAGE, tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData(
+					consts.BUY_TETHER_AMOUNT_LIST[0],
+					consts.BUY_TETHER_DATA+consts.BUY_TETHER_AMOUNT_LIST[0],
+				),
+			),
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData(
+					consts.BUY_TETHER_AMOUNT_LIST[1],
+					consts.BUY_TETHER_DATA+consts.BUY_TETHER_AMOUNT_LIST[1],
+				),
+			),
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData(
+					consts.BUY_TETHER_AMOUNT_LIST[2],
+					consts.BUY_TETHER_DATA+consts.BUY_TETHER_AMOUNT_LIST[2],
+				),
+			),
+		))
+		res = append(res, editedMsg)
+	}
+
 	return res, nil
 }
