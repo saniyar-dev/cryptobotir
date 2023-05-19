@@ -9,8 +9,8 @@ import (
 
 type MessageHandler struct{}
 
-func (h *MessageHandler) handleCommands(update tgbotapi.Update) ([]tgbotapi.MessageConfig, error) {
-	var res []tgbotapi.MessageConfig
+func (h *MessageHandler) handleCommands(update tgbotapi.Update) ([]tgbotapi.Chattable, error) {
+	var res []tgbotapi.Chattable
 	var err error
 	chatID := update.Message.Chat.ID
 	switch update.Message.Command() {
@@ -22,23 +22,29 @@ func (h *MessageHandler) handleCommands(update tgbotapi.Update) ([]tgbotapi.Mess
 		buyService := service.BuyFromCryptobotService{}
 		res, err = buyService.Buy(update)
 		if err != nil {
-			return []tgbotapi.MessageConfig{}, err
+			return []tgbotapi.Chattable{}, err
 		}
 	default:
-		return []tgbotapi.MessageConfig{}, consts.UPDATE_MESSAGE_ERROR
+		return []tgbotapi.Chattable{}, consts.UPDATE_MESSAGE_ERROR
 	}
 	return res, nil
 }
 
 func (h *MessageHandler) handleCallbackQuery(
 	update tgbotapi.Update,
-) ([]tgbotapi.MessageConfig, error) {
-	var res []tgbotapi.MessageConfig
-	// var err error
+) ([]tgbotapi.Chattable, error) {
+	var res []tgbotapi.Chattable
+	var err error
 
 	switch update.CallbackQuery.Data {
+	case consts.BUY_TETHER_DATA:
+		buyService := service.BuyFromCryptobotService{}
+		res, err = buyService.BuyTether(update)
+		if err != nil {
+			return []tgbotapi.Chattable{}, err
+		}
 	default:
-		return []tgbotapi.MessageConfig{}, &consts.CustomError{
+		return []tgbotapi.Chattable{}, &consts.CustomError{
 			Message: consts.UPDATE_MESSAGE_ERROR.Message,
 			Code:    consts.UPDATE_MESSAGE_ERROR.Code,
 			Detail:  update.CallbackQuery.Data,
@@ -48,7 +54,7 @@ func (h *MessageHandler) handleCallbackQuery(
 }
 
 func (h *MessageHandler) HandleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) error {
-	var res []tgbotapi.MessageConfig
+	var res []tgbotapi.Chattable
 	var err error
 
 	if update.Message != nil {
