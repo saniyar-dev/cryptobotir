@@ -4,19 +4,26 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"github.com/saniyar-dev/cryptobotir/pkg/consts"
+	"github.com/saniyar-dev/cryptobotir/pkg/service"
 )
 
 type MessageHandler struct{}
 
 func (h *MessageHandler) handleCommands(update tgbotapi.Update) ([]tgbotapi.MessageConfig, error) {
 	var res []tgbotapi.MessageConfig
-	// var err error
+	var err error
 	chatID := update.Message.Chat.ID
 	switch update.Message.Command() {
 	case consts.START_COMMAND:
 		res = append(res, tgbotapi.NewMessage(chatID, consts.START_MESSAGE))
 	case consts.HELP_COMMAND:
 		res = append(res, tgbotapi.NewMessage(chatID, consts.HELP_MESSAGE))
+	case consts.BUY_COMMAND:
+		buyService := service.BuyFromCryptobotService{}
+		res, err = buyService.Buy(update)
+		if err != nil {
+			return []tgbotapi.MessageConfig{}, err
+		}
 	default:
 		return []tgbotapi.MessageConfig{}, consts.UPDATE_MESSAGE_ERROR
 	}
