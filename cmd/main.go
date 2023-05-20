@@ -9,7 +9,15 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/saniyar-dev/cryptobotir/pkg"
 	"github.com/saniyar-dev/cryptobotir/pkg/consts"
+	"github.com/saniyar-dev/cryptobotir/pkg/service"
 )
+
+func setupPaymentService() {
+	paymentService := service.PaymentService{}
+	if err := paymentService.InitPaymentClient(); err != nil {
+		log.Fatal(err.Error())
+	}
+}
 
 func setupMainBot() {
 	proxyURL, err := url.Parse(os.Getenv("PROXY_URL"))
@@ -66,5 +74,6 @@ func setupMainBot() {
 }
 
 func main() {
+	setupPaymentService()
 	setupMainBot()
 }
