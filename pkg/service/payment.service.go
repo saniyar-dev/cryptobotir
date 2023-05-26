@@ -1,11 +1,11 @@
 package service
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/arthurshafikov/cryptobot-sdk-golang/cryptobot"
+	"github.com/google/uuid"
 	"github.com/saniyar-dev/cryptobotir/pkg/consts"
 	"github.com/saniyar-dev/cryptobotir/pkg/models"
 )
@@ -66,31 +66,32 @@ func (s *PaymentService) ReceiveTether(user models.User, amount string) (*crypto
 }
 
 func (s *PaymentService) TransferTether(user models.User, amount string) error {
-	transfer, err := paymentClient.Transfer(cryptobot.TransferRequest{
+	log.Println(amount)
+	_, err := paymentClient.Transfer(cryptobot.TransferRequest{
 		UserID:                  user.UserTgID,
 		Asset:                   cryptobot.USDT,
 		Amount:                  amount,
-		SpendID:                 "",
+		SpendID:                 uuid.New().String(),
 		Comment:                 "Debt",
 		DisableSendNotification: false,
 	})
-	if err != nil {
+	if err != nil && err.Error() != "error while unmarshaling response to the target: json: cannot unmarshal number into Go struct field Transfer.result.user_id of type string" {
 		return &consts.CustomError{
 			Message: consts.CRYPTO_BOT_TRANSFER_ERROR.Message,
 			Code:    consts.CRYPTO_BOT_TRANSFER_ERROR.Code,
 			Detail:  err.Error(),
 		}
 	}
-
-	fmt.Printf(
-		"ID - %v, UserID - %s, Status - %s, Amount - %s, Asset - %s, Comment - %s, CompletedAt - %s \n",
-		transfer.ID,
-		transfer.UserID,
-		transfer.Status,
-		transfer.Amount,
-		transfer.Asset,
-		transfer.Comment,
-		transfer.CompletedAt,
-	)
+	//
+	// log.Printf(
+	// 	"ID - %v, UserID - %s, Status - %s, Amount - %s, Asset - %s, Comment - %s, CompletedAt - %s \n",
+	// 	transfer.ID,
+	// 	transfer.UserID,
+	// 	transfer.Status,
+	// 	transfer.Amount,
+	// 	transfer.Asset,
+	// 	transfer.Comment,
+	// 	transfer.CompletedAt,
+	// )
 	return nil
 }
