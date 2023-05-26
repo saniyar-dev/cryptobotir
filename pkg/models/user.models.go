@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	UserTgID string
+	UserTgID int64
 	Name     string
 	Age      int
 	Email    string
