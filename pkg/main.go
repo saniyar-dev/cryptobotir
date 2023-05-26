@@ -1,37 +1,71 @@
 package pkg
 
 import (
+	"strings"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"github.com/saniyar-dev/cryptobotir/pkg/consts"
+	"github.com/saniyar-dev/cryptobotir/pkg/models"
+	"github.com/saniyar-dev/cryptobotir/pkg/service"
 )
 
 type MessageHandler struct{}
 
-func (h *MessageHandler) handleCommands(update tgbotapi.Update) ([]tgbotapi.MessageConfig, error) {
-	var res []tgbotapi.MessageConfig
-	// var err error
+func (h *MessageHandler) handleCommands(update tgbotapi.Update) ([]tgbotapi.Chattable, error) {
+	var res []tgbotapi.Chattable
+	var err error
 	chatID := update.Message.Chat.ID
 	switch update.Message.Command() {
 	case consts.START_COMMAND:
 		res = append(res, tgbotapi.NewMessage(chatID, consts.START_MESSAGE))
 	case consts.HELP_COMMAND:
 		res = append(res, tgbotapi.NewMessage(chatID, consts.HELP_MESSAGE))
+	case consts.BUY_COMMAND:
+		buyService := service.BuyFromCryptobotService{}
+		res, err = buyService.Buy(update)
+		if err != nil {
+			return []tgbotapi.Chattable{}, err
+		}
+	case consts.SELL_COMMAND:
+		sellService := service.SellFromCryptobotService{}
+		res, err = sellService.Sell(update)
+		if err != nil {
+			return []tgbotapi.Chattable{}, err
+		}
 	default:
-		return []tgbotapi.MessageConfig{}, consts.UPDATE_MESSAGE_ERROR
+		return []tgbotapi.Chattable{}, consts.UPDATE_MESSAGE_ERROR
 	}
 	return res, nil
 }
 
 func (h *MessageHandler) handleCallbackQuery(
 	update tgbotapi.Update,
-) ([]tgbotapi.MessageConfig, error) {
-	var res []tgbotapi.MessageConfig
-	// var err error
+) ([]tgbotapi.Chattable, error) {
+	var res []tgbotapi.Chattable
+	var err error
 
-	switch update.CallbackQuery.Data {
+	switch strings.Split(update.CallbackQuery.Data, "|")[0] {
+	case consts.BUY_TETHER_DATA:
+		buyService := service.BuyFromCryptobotService{}
+		res, err = buyService.BuyTether(update)
+		if err != nil {
+			return []tgbotapi.Chattable{}, err
+		}
+	case consts.SELL_TETHER_DATA:
+		sellService := service.SellFromCryptobotService{}
+		res, err = sellService.SellTether(update)
+		if err != nil {
+			return []tgbotapi.Chattable{}, err
+		}
+	case consts.PAY_BUTTON_DATA:
+		paymentService := service.PaymentService{}
+		err = paymentService.TransferTether(models.User{UserTgID: update.CallbackQuery.From.ID}, "2")
+		if err != nil {
+			return []tgbotapi.Chattable{}, err
+		}
 	default:
-		return []tgbotapi.MessageConfig{}, &consts.CustomError{
+		return []tgbotapi.Chattable{}, &consts.CustomError{
 			Message: consts.UPDATE_MESSAGE_ERROR.Message,
 			Code:    consts.UPDATE_MESSAGE_ERROR.Code,
 			Detail:  update.CallbackQuery.Data,
@@ -41,7 +75,7 @@ func (h *MessageHandler) handleCallbackQuery(
 }
 
 func (h *MessageHandler) HandleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) error {
-	var res []tgbotapi.MessageConfig
+	var res []tgbotapi.Chattable
 	var err error
 
 	if update.Message != nil {
