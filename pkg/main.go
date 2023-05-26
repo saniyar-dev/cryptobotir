@@ -6,6 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"github.com/saniyar-dev/cryptobotir/pkg/consts"
+	"github.com/saniyar-dev/cryptobotir/pkg/models"
 	"github.com/saniyar-dev/cryptobotir/pkg/service"
 )
 
@@ -26,6 +27,12 @@ func (h *MessageHandler) handleCommands(update tgbotapi.Update) ([]tgbotapi.Chat
 		if err != nil {
 			return []tgbotapi.Chattable{}, err
 		}
+	case consts.SELL_COMMAND:
+		sellService := service.SellFromCryptobotService{}
+		res, err = sellService.Sell(update)
+		if err != nil {
+			return []tgbotapi.Chattable{}, err
+		}
 	default:
 		return []tgbotapi.Chattable{}, consts.UPDATE_MESSAGE_ERROR
 	}
@@ -42,6 +49,18 @@ func (h *MessageHandler) handleCallbackQuery(
 	case consts.BUY_TETHER_DATA:
 		buyService := service.BuyFromCryptobotService{}
 		res, err = buyService.BuyTether(update)
+		if err != nil {
+			return []tgbotapi.Chattable{}, err
+		}
+	case consts.SELL_TETHER_DATA:
+		sellService := service.SellFromCryptobotService{}
+		res, err = sellService.SellTether(update)
+		if err != nil {
+			return []tgbotapi.Chattable{}, err
+		}
+	case consts.PAY_BUTTON_DATA:
+		paymentService := service.PaymentService{}
+		err = paymentService.TransferTether(models.User{UserTgID: update.CallbackQuery.From.ID}, "2")
 		if err != nil {
 			return []tgbotapi.Chattable{}, err
 		}
