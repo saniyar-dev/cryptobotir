@@ -55,7 +55,7 @@ func (s *BuyFromCryptobotService) BuyTether(update tgbotapi.Update) ([]tgbotapi.
 	var res []tgbotapi.Chattable
 
 	if update.CallbackQuery != nil && update.CallbackQuery.Data != consts.BUY_TETHER_DATA {
-		amount := strings.ReplaceAll(strings.Trim(update.CallbackQuery.Data, consts.BUY_TETHER_DATA), " ", "")
+		amount := strings.ReplaceAll(strings.Trim(update.CallbackQuery.Data, consts.BUY_TETHER_DATA), "|", "")
 		editedMsg := tgbotapi.NewEditMessageTextAndMarkup(chatID, msgID, consts.PAY_FOR_TETHER_MESSAGE+amount, tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
 				tgbotapi.NewInlineKeyboardButtonData(
@@ -70,19 +70,19 @@ func (s *BuyFromCryptobotService) BuyTether(update tgbotapi.Update) ([]tgbotapi.
 			tgbotapi.NewInlineKeyboardRow(
 				tgbotapi.NewInlineKeyboardButtonData(
 					consts.BUY_TETHER_AMOUNT_LIST[0],
-					consts.BUY_TETHER_DATA+consts.BUY_TETHER_AMOUNT_LIST[0],
+					consts.BUY_TETHER_DATA+"|"+consts.BUY_TETHER_AMOUNT_LIST[0],
 				),
 			),
 			tgbotapi.NewInlineKeyboardRow(
 				tgbotapi.NewInlineKeyboardButtonData(
 					consts.BUY_TETHER_AMOUNT_LIST[1],
-					consts.BUY_TETHER_DATA+consts.BUY_TETHER_AMOUNT_LIST[1],
+					consts.BUY_TETHER_DATA+"|"+consts.BUY_TETHER_AMOUNT_LIST[1],
 				),
 			),
 			tgbotapi.NewInlineKeyboardRow(
 				tgbotapi.NewInlineKeyboardButtonData(
 					consts.BUY_TETHER_AMOUNT_LIST[2],
-					consts.BUY_TETHER_DATA+consts.BUY_TETHER_AMOUNT_LIST[2],
+					consts.BUY_TETHER_DATA+"|"+consts.BUY_TETHER_AMOUNT_LIST[2],
 				),
 			),
 		))
