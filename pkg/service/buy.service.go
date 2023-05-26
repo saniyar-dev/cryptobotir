@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strconv"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -38,6 +39,34 @@ func (s *BuyFromCryptobotService) Buy(update tgbotapi.Update) ([]tgbotapi.Chatta
 	return res, nil
 }
 
+func (s *BuyFromCryptobotService) checkTetherBalance() error {
+	paymentService := PaymentService{}
+	balance, err := paymentService.GetTetherBalance()
+	if err != nil {
+		return err
+	}
+	balanceInt, err := strconv.ParseFloat(balance, 64)
+	if err != nil {
+		return &consts.CustomError{
+			Message: consts.PARSE_STRING_ERROR.Message,
+			Code:    consts.PARSE_STRING_ERROR.Code,
+			Detail:  err.Error(),
+		}
+	}
+	maxBuyReqInt, err := strconv.ParseFloat(consts.BUY_TETHER_AMOUNT_LIST[2], 64)
+	if err != nil {
+		return &consts.CustomError{
+			Message: consts.PARSE_STRING_ERROR.Message,
+			Code:    consts.PARSE_STRING_ERROR.Code,
+			Detail:  err.Error(),
+		}
+	}
+	if balanceInt <= maxBuyReqInt+2 {
+		return consts.LOW_BALANCE_ERROR
+	}
+	return nil
+}
+
 func (s *BuyFromCryptobotService) BuyTether(update tgbotapi.Update) ([]tgbotapi.Chattable, error) {
 	var chatID int64
 	var msgID int
@@ -53,6 +82,10 @@ func (s *BuyFromCryptobotService) BuyTether(update tgbotapi.Update) ([]tgbotapi.
 		// username = update.CallbackQuery.Message.Chat.UserName
 	}
 	var res []tgbotapi.Chattable
+
+	if err := s.checkTetherBalance(); err != nil {
+		return []tgbotapi.Chattable{}, err
+	}
 
 	if update.CallbackQuery != nil && update.CallbackQuery.Data != consts.BUY_TETHER_DATA {
 		amount := strings.ReplaceAll(strings.Trim(update.CallbackQuery.Data, consts.BUY_TETHER_DATA), "|", "")

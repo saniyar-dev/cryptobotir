@@ -95,3 +95,24 @@ func (s *PaymentService) TransferTether(user models.User, amount string) error {
 	// )
 	return nil
 }
+
+func (s *PaymentService) GetTetherBalance() (string, error) {
+	var res string
+
+	balance, err := paymentClient.GetBalance()
+	if err != nil {
+		return "", &consts.CustomError{
+			Message: consts.CRYPTO_BOT_GET_BALANCE_ERROR.Message,
+			Code:    consts.CRYPTO_BOT_GET_BALANCE_ERROR.Code,
+			Detail:  err.Error(),
+		}
+	}
+
+	for _, asset := range balance {
+		if asset.CurrencyCode == cryptobot.USDT {
+			res = asset.Available
+		}
+	}
+
+	return res, nil
+}
